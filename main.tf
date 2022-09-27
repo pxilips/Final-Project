@@ -38,14 +38,8 @@ resource "azurerm_network_interface" "Server-NIC" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.Server-SUBNET.id
     private_ip_address_allocation = "Dynamic"
-	public_ip_address_id          = azurerm_public_ip.my_public_ip.id
+ public_ip_address_id          = azurerm_public_ip.my_public_ip.id
   }
-}
-
-# Connect the security group to the network interface
-resource "azurerm_network_interface_security_group_association" "SGA" {
-  network_interface_id      = azurerm_network_interface.Server-NIC.id
-  network_security_group_id = azurerm_network_security_group.Server-NSG.id
 }
 
 # Create virtual machine
