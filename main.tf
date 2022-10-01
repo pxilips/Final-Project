@@ -128,6 +128,6 @@ resource "azurerm_mysql_firewall_rule" "db-firewall" {
   name                = "db-firewall"
   resource_group_name = azurerm_resource_group.Server-RG.name
   server_name         = azurerm_mysql_server.mysql-prod-rd.name
-  start_ip_address    = "0.0.0.0"
-  end_ip_address      = "0.0.0.0"
+  start_ip_address    = "37.57.147.122"
+  end_ip_address      = "37.57.147.122"
 }
