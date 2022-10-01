@@ -1,12 +1,12 @@
 # Create resource group
 resource "azurerm_resource_group" "Server-RG" {
-  name     = "Server-RG"
-  location = "West Europe"
+  name     = var.name_RG
+  location = var.location
 }
 
 # Create virtual network
 resource "azurerm_virtual_network" "Server-VPC" {
-  name                = "Server-network"
+  name                = var.VPC
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.Server-RG.location
   resource_group_name = azurerm_resource_group.Server-RG.name
@@ -14,7 +14,7 @@ resource "azurerm_virtual_network" "Server-VPC" {
 
 # Create subnet
 resource "azurerm_subnet" "Server-SUBNET" {
-  name                 = "Server-SUBNET"
+  name                 = var.Subnet-1
   resource_group_name  = azurerm_resource_group.Server-RG.name
   virtual_network_name = azurerm_virtual_network.Server-VPC.name
   address_prefixes     = ["10.0.2.0/24"]
@@ -90,4 +90,44 @@ resource "azurerm_network_security_group" "Server-NSG" {
 resource "azurerm_network_interface_security_group_association" "Server-NSGA" {
   network_interface_id      = azurerm_network_interface.Server-NIC.id
   network_security_group_id = azurerm_network_security_group.Server-NSG.id
+}
+
+# Create MySql
+resource "azurerm_mysql_server" "mysql-prod-rd" {
+  name                = "mysql-prod-rd"
+  location            = azurerm_resource_group.Server-RG.location
+  resource_group_name = azurerm_resource_group.Server-RG.name
+
+  administrator_login          = "mysqladminun"
+  administrator_login_password = "H@Sh1CoR3!"
+
+  sku_name   = "B_Gen5_2"
+  storage_mb = 5120
+  version    = "5.7"
+
+  auto_grow_enabled                 = true
+  backup_retention_days             = 7
+  geo_redundant_backup_enabled      = false
+  infrastructure_encryption_enabled = false
+  public_network_access_enabled     = true
+  ssl_enforcement_enabled           = true
+  ssl_minimal_tls_version_enforced  = "TLS1_2"
+}
+
+# Create Database
+resource "azurerm_mysql_database" "my-db" {
+  name                = "my-db"
+  resource_group_name = azurerm_resource_group.Server-RG.name
+  server_name         = azurerm_mysql_server.mysql-prod-rd.name
+  charset             = "utf8"
+  collation           = "utf8_unicode_ci"
+}
+
+# Create firewall
+resource "azurerm_mysql_firewall_rule" "db-firewall" {
+  name                = "db-firewall"
+  resource_group_name = azurerm_resource_group.Server-RG.name
+  server_name         = azurerm_mysql_server.mysql-prod-rd.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
 }
